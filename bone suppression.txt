@@ -1,0 +1,11 @@
+# 연구주제
+directional kernel approximation
+local direction
+gradient approximation
+orientation별 filter response
+
+# pyscsp 노트북
+
+1. affscspdemo.ipynb -> directional derivative approximation mask
+2. gaussdersdemo.ipynb -> 기본적인 Gaussian derivative
+3. discscspdemo.ipynb -> scale-space 기본 개념용
