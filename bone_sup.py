@@ -2,31 +2,44 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage.morphology import remove_small_objects, binary_closing, disk
+# from skimage.morphology import remove_small_objects, binary_closing, disk
 
 # 1. Load image
 import numpy as np
 
-image_path = "zFail_chest 86kv 200ma 8mas (grid).raw"
+# image_path = "zFail_chest 86kv 200ma 8mas (grid).raw"
+image_path = "CHEST_sid 180_110kv 8mas_grid O.raw"
+# image_path = "zFail_chest 75kv 200ma 5mas.raw"
 
 img = np.fromfile(image_path, dtype=np.uint16)
-
-# image_path = "CHEST_sid 180_110kv 8mas_grid O.raw"
 
 width = 3072
 height = 3072
 
 # img = np.fromfile('zFail_chest 86kv 200ma 8mas (grid).raw', dtype=np.uint16)
-img = img.reshape((height, width))
-img = img.astype(np.float32)
-img = (img - img.min()) / (img.max() - img.min())
 
 # normalize
-img = img.astype(np.float32)
-img = (img - img.min()) / (img.max() - img.min() + 1e-8)
-
 # img = img.astype(np.float32)
 # img = (img - img.min()) / (img.max() - img.min() + 1e-8)
+
+img = np.fromfile(image_path, dtype=np.uint16)
+img = img.reshape((height, width))
+img = img.astype(np.float32)
+
+low, high = np.percentile(img, (2, 98))
+img = np.clip(img, low, high)
+img = (img - low) / (high - low + 1e-8)
+
+# 필요하면 X-ray 밝기 반전
+# img = 1.0 - img
+
+# OpenCV bilateralFilter용 자료형 고정
+img = img.astype(np.float32)
+img = np.ascontiguousarray(img)
+
+# ced = cv2.bilateralFilter(img, d=9, sigmaColor=0.1, sigmaSpace=75)
+# ced = ced.astype(np.float32)
+# ced = (ced - ced.min()) / (ced.max() - ced.min() + 1e-8)
 
 # 2. CED 대신 Gaussian + edge-preserving
 ced = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
@@ -59,8 +72,29 @@ coherency = coherency / (coherency.max() + 1e-8)
 # 5. Bone mask
 bone_mask = (coherency > 0.05)
 
-bone_mask = remove_small_objects(bone_mask.astype(bool), min_size=80)
-bone_mask = binary_closing(bone_mask, disk(2))
+# bone_mask = remove_small_objects(bone_mask.astype(bool), min_size=80)
+# bone_mask = binary_closing(bone_mask, disk(2))
+# bone_mask = bone_mask.astype(np.float32)
+
+# remove_small_objects 대체
+bone_mask_uint8 = bone_mask.astype(np.uint8)
+
+num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+    bone_mask_uint8, connectivity=8
+)
+
+min_size = 80
+clean_mask = np.zeros_like(bone_mask_uint8)
+
+for i in range(1, num_labels):  # 0번은 배경
+    area = stats[i, cv2.CC_STAT_AREA]
+    if area >= min_size:
+        clean_mask[labels == i] = 1
+
+# binary_closing 대체
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+bone_mask = cv2.morphologyEx(clean_mask, cv2.MORPH_CLOSE, kernel)
+
 bone_mask = bone_mask.astype(np.float32)
 
 # 6. Bone component / soft mask
