@@ -26,9 +26,10 @@ img = np.fromfile(image_path, dtype=np.uint16)
 img = img.reshape((height, width))
 img = img.astype(np.float32)
 
-low, high = np.percentile(img, (2, 98))
+low, high = np.percentile(img, (0.5, 99.5))
 img = np.clip(img, low, high)
 img = (img - low) / (high - low + 1e-8)
+
 
 # 필요하면 X-ray 밝기 반전
 # img = 1.0 - img
@@ -42,7 +43,12 @@ img = np.ascontiguousarray(img)
 # ced = (ced - ced.min()) / (ced.max() - ced.min() + 1e-8)
 
 # 2. CED 대신 Gaussian + edge-preserving
-ced = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
+# ced = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
+# ced = (ced - ced.min()) / (ced.max() - ced.min() + 1e-8)
+
+# -------------------------------------------
+gamma = 0.45
+ced = cv2.bilateralFilter(img, d=9, sigmaColor=0.08, sigmaSpace=75)
 ced = (ced - ced.min()) / (ced.max() - ced.min() + 1e-8)
 
 # 3. Gradient
