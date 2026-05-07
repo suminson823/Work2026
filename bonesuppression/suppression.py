@@ -8,9 +8,9 @@ from pathlib import Path
 # 0. Settings
 # ====================================================
 
-image_path = "CHEST_sid 180_110kv 8mas_grid O.raw"
+# image_path = "CHEST_sid 180_110kv 8mas_grid O.raw"
 # image_path = "zFail_chest 86kv 200ma 8mas (grid).raw"
-# image_path = "zFail_chest 75kv 200ma 5mas.raw"
+image_path = "zFail_chest 75kv 200ma 5mas.raw"
 
 width = 3072
 height = 3072
@@ -46,12 +46,12 @@ if raw.size != width * height:
 raw = raw.reshape((height, width))
 raw = raw.astype(np.float32)
 
-print("RAW loaded")
-print("raw dtype:", raw.dtype)
-print("raw shape:", raw.shape)
-print("raw min:", raw.min())
-print("raw max:", raw.max())
-print("raw percentiles:", np.percentile(raw, [0.5, 1, 5, 50, 95, 99, 99.5]))
+# print("RAW loaded")
+# print("raw dtype:", raw.dtype)
+# print("raw shape:", raw.shape)
+# print("raw min:", raw.min())
+# print("raw max:", raw.max())
+# print("raw percentiles:", np.percentile(raw, [0.5, 1, 5, 50, 95, 99, 99.5]))
 
 
 # ====================================================
@@ -76,10 +76,10 @@ img = np.clip(img, 0, 1)
 img = img.astype(np.float32)
 img = np.ascontiguousarray(img)
 
-print("Processed image")
-print("img dtype:", img.dtype)
-print("img min:", img.min())
-print("img max:", img.max())
+# print("Processed image")
+# print("img dtype:", img.dtype)
+# print("img min:", img.min())
+# print("img max:", img.max())
 
 
 # ====================================================
